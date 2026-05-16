@@ -65,19 +65,32 @@ def ffmpeg_available():
     return ffmpeg_status
 
 def get_url():
-    # Obtenemos la url del video que el usuario quiere extraerle el audio
-    return input("Ingresa la URL del video de YouTube al cual deseas descargar el audio: ")
+    
+    while True:
+        # Obtenemos la url del video que el usuario quiere extraerle el audio
+        url = input("Ingresa la URL del video de YouTube al cual deseas descargar el audio: "). strip()
+    
+        # Si la url no está vacía la retornamos 
+        if url:
+            return url
+
+        # Mostramos el mensaje para que el usuario verifique        
+        print("No escribiste nada o solo pusiste espacios.")
+
 
 def download_audio(url):
 
     progress_previous = 0
 
     # Ejecutamos el comando de descarga
-    result = subprocess.Popen(["yt-dlp", "-x", "--audio-format", "mp3", "--audio-quality", "5", url], stdout=subprocess.PIPE, text=True)
-    
-    # Leemos linea por linea el proceso
+    result = subprocess.Popen(["yt-dlp", "-x", "--audio-format", "mp3", "--audio-quality", "5", url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+    # Leemos linea por linea el proceso (liberando el buffering del sistema)
     for line in result.stdout:
         #print(line)
+
+        if "error" in line.lower():
+            print(line.strip())
 
         contains_percent = "%" in line
 
@@ -122,6 +135,8 @@ def main():
 
         if download_result == 0:
             print("Audio extraido exitosamente")
+        else:
+            print("No se pudo descargar el audio. Verifica la URL o revisa el mensaje mostrado.")
     else:
         print("No se puede iniciar el programa. Revisa las dependencias faltantes.")
     
