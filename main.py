@@ -71,8 +71,18 @@ def ffmpeg_available():
     return ffmpeg_status
 
 def get_url():
-    # Obtenemos la url del video que el usuario quiere extraerle el audio
-    return input("Ingresa la URL del video de YouTube al cual deseas descargar el audio: ")
+    
+    while True:
+        # Obtenemos la url del video que el usuario quiere extraerle el audio
+        url = input("Ingresa la URL del video de YouTube al cual deseas descargar el audio: "). strip()
+    
+        # Si la url no está vacía la retornamos 
+        if url:
+            return url
+
+        # Mostramos el mensaje para que el usuario verifique        
+        print("No escribiste nada o solo pusiste espacios.")
+
 
 def download_audio(url, download_path):
 
@@ -84,6 +94,9 @@ def download_audio(url, download_path):
     # Leemos linea por linea el proceso
     for line in result.stdout:
         #print(line)
+
+        if "error" in line.lower():
+            print(line.strip())
 
         contains_percent = "%" in line
 
