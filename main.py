@@ -2,8 +2,14 @@
 
 # https://www.youtube.com/watch?v=Srvt_6up-0o : url de prueba
 
-# importamos la libreria subprocess para controlar la ejecución de comandos manualmente
-import subprocess
+# Importamos la libreria subprocess para controlar la ejecución de comandos manualmente
+import subprocess # Para la ejecución de comandos
+
+import locale # Para saber el idioma local del sistema 
+import sys # Para conocer el idioma local del sistema
+
+from platformdirs import user_downloads_dir # Importamos la librería para el manejo de rutas de entornos del sistema
+from pathlib import Path # Importamos la librería para el manejo de rutas y archivos de descarga
 
 dependencies = {
     "yt-dlp": False,
@@ -68,12 +74,12 @@ def get_url():
     # Obtenemos la url del video que el usuario quiere extraerle el audio
     return input("Ingresa la URL del video de YouTube al cual deseas descargar el audio: ")
 
-def download_audio(url):
+def download_audio(url, download_path):
 
     progress_previous = 0
 
     # Ejecutamos el comando de descarga
-    result = subprocess.Popen(["yt-dlp", "-x", "--audio-format", "mp3", "--audio-quality", "5", url], stdout=subprocess.PIPE, text=True)
+    result = subprocess.Popen(["yt-dlp", "-x", "--audio-format", "mp3", "--audio-quality", "5", "-P", download_path, url], stdout=subprocess.PIPE, text=True)
     
     # Leemos linea por linea el proceso
     for line in result.stdout:
@@ -100,6 +106,24 @@ def download_audio(url):
     result.wait()
     return result.returncode
 
+def get_download_path():
+    
+    new_download_path = Path(user_downloads_dir()) 
+
+    if new_download_path.exists() and new_download_path.is_dir():
+        print("La carpeta existe")
+        return new_download_path
+    elif new_download_path.exists():
+        print("Existe pero no es un directorio")
+        return None
+    else:
+        try: # Creamos la carpeta físicamente si no existe
+            new_download_path.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            print("No tienese permisos de escritura para crear la carpeta")       
+            return None
+
+    return new_download_path
 
 def main():
 
@@ -117,11 +141,17 @@ def main():
         # Obtenemos la url y se la pasamos al descargador
         url = get_url()
 
-        # Descargamos el audio
-        download_result = download_audio(url)
+        download_path = get_download_path() # Obtenemos el lugar de descarga por defecto
 
-        if download_result == 0:
-            print("Audio extraido exitosamente")
+        if download_path is None:
+            print("No se pudo completar la descarga")
+        else:
+            # Descargamos el audio
+            download_path = str(download_path)
+            download_result = download_audio(url, download_path)
+
+            if download_result == 0:
+                print("Audio extraido exitosamente")
     else:
         print("No se puede iniciar el programa. Revisa las dependencias faltantes.")
     
