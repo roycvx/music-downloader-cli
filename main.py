@@ -111,13 +111,18 @@ def download_audio(url, download_path):
             if progress_current != progress_previous:
                 # Asignamos el progreso actual para que sea el previo en la siguiente iteracion
                 progress_previous = progress_current
-
-                # Mostramos el porcentaje de descarga
-                print(f"Descargando: {progress_current}")
-
+                show_progress_bar(progress_current)
 
     result.wait()
     return result.returncode
+
+def show_progress_bar(progress_current):
+    
+    bar_used = (progress_current * 30) / 100 # Calculamos con regla de 3 el uso de la barra para una longitud de 30 bloques
+    bar = "█" * int(bar_used) + "░" * (30 - int(bar_used)) # Construimos la barra en tiempo real
+
+    # Mostramos el porcentaje de descarga
+    print(f"Descargando {progress_current} {bar}", end="\r", flush=True)
 
 def get_download_path():
     
@@ -164,11 +169,9 @@ def main():
             download_result = download_audio(url, download_path)
 
             if download_result == 0:
-                print("Audio extraido exitosamente")
+                print("\nAudio extraido exitosamente")
     else:
         print("No se puede iniciar el programa. Revisa las dependencias faltantes.")
-    
-
 
 if __name__ == "__main__":
     main()
